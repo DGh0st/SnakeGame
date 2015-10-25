@@ -1,0 +1,358 @@
+#include <SFML/Graphics.hpp>
+#include <stdlib.h>
+#include <time.h>
+#include <vector>
+#include <string>
+#include <math.h>
+
+const int SCRWIDTH = 500; 
+const int SCRHEIGHT = 500;
+
+const float velocity = 20.0f; 
+
+void wait(double seconds){
+	sf::Clock clock;
+	while(clock.getElapsedTime().asSeconds()<seconds){};
+}
+
+int main()
+{
+	sf::Clock timer;
+	timer.restart();
+	
+    sf::RenderWindow window(sf::VideoMode(SCRWIDTH, SCRHEIGHT), "Snake Game!");
+
+    sf::RectangleShape rectangle(sf::Vector2f(20.0, 20.0));
+	rectangle.setPosition(sf::Vector2f(140, 140));
+	rectangle.setFillColor(sf::Color::Green);
+
+	sf::RectangleShape diamond(sf::Vector2f(20.0, 20.0));
+	diamond.setPosition(sf::Vector2f(300, 100));
+	diamond.setFillColor(sf::Color::Red);
+
+	std::vector<sf::RectangleShape> bombs;
+	bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+	bombs[0].setPosition(sf::Vector2f(140, 340));
+	bombs[0].setFillColor(sf::Color(55, 55, 55));
+	bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+	bombs[0].setPosition(sf::Vector2f(120, 340));
+	bombs[0].setFillColor(sf::Color(75, 75, 75));
+	bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+	bombs[0].setPosition(sf::Vector2f(140, 320));
+	bombs[0].setFillColor(sf::Color(75, 75, 75));
+	bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+	bombs[0].setPosition(sf::Vector2f(160, 340));
+	bombs[0].setFillColor(sf::Color(75, 75, 75));
+	bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+	bombs[0].setPosition(sf::Vector2f(140, 360));
+	bombs[0].setFillColor(sf::Color(75, 75, 75));
+	bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+	bombs[0].setPosition(sf::Vector2f(120, 320));
+	bombs[0].setFillColor(sf::Color(75, 75, 75));
+	bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+	bombs[0].setPosition(sf::Vector2f(120, 360));
+	bombs[0].setFillColor(sf::Color(75, 75, 75));
+	bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+	bombs[0].setPosition(sf::Vector2f(160, 320));
+	bombs[0].setFillColor(sf::Color(75, 75, 75));
+	bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+	bombs[0].setPosition(sf::Vector2f(160, 360));
+	bombs[0].setFillColor(sf::Color(75, 75, 75));
+
+	sf::Text text;
+	sf::Font font;
+	font.loadFromFile("BLKCHCRY.ttf");
+	text.setFont(font);
+	text.setColor(sf::Color::White);
+	text.setCharacterSize(32);
+
+	sf::Text undertext;
+	undertext.setFont(font);
+	undertext.setColor(sf::Color::White);
+	undertext.setCharacterSize(16);
+
+	sf::Text underundertext;
+	underundertext.setFont(font);
+	underundertext.setColor(sf::Color::White);
+	underundertext.setCharacterSize(12);
+
+	sf::Text bombtext;
+	bombtext.setFont(font);
+	bombtext.setColor(sf::Color::White);
+	bombtext.setCharacterSize(12);
+
+	bool regenerateApple = false;
+
+	std::vector<sf::RectangleShape> tails;
+	tails.insert(tails.begin(), sf::RectangleShape(rectangle.getSize()));
+	tails[0].setPosition(rectangle.getPosition().x-20,rectangle.getPosition().y);
+	tails[0].setFillColor(sf::Color(0,200,0));
+	tails.insert(tails.begin(), sf::RectangleShape(rectangle.getSize()));
+	tails[0].setPosition(rectangle.getPosition().x-40,rectangle.getPosition().y);
+	tails[0].setFillColor(sf::Color(0,200,0));
+
+	int dir = 3;
+	bool gameOver = true;
+	bool firsttime = true;
+	float gameSpeed = 0.151f;
+
+	srand ((int)time(NULL));
+
+    while (window.isOpen())
+    {
+		sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed){
+                window.close();
+			} else if(event.type == sf::Event::KeyPressed){
+				if(event.key.code == sf::Keyboard::W && !firsttime)
+					dir = 0;
+				else if(event.key.code == sf::Keyboard::S && !firsttime)
+					dir = 2;
+				else if(event.key.code == sf::Keyboard::A && !firsttime)
+					dir = 1;
+				else if(event.key.code == sf::Keyboard::D && !firsttime)
+					dir = 3;
+				else if(event.key.code == sf::Keyboard::Space && (gameOver || firsttime)){
+					regenerateApple = true;
+					firsttime = false;
+					tails = std::vector<sf::RectangleShape>();
+					tails.insert(tails.begin(), sf::RectangleShape(rectangle.getSize()));
+					tails[0].setPosition(rectangle.getPosition());
+					tails[0].setFillColor(sf::Color(0,200,0));
+					rectangle.setPosition(sf::Vector2f(200, 200));
+					dir = 3;
+					gameOver = false;
+					gameSpeed = 0.151f;
+				} else if(event.key.code == sf::Keyboard::Escape && gameOver && !firsttime){
+					regenerateApple = false;
+					firsttime = true;
+					rectangle.setPosition(sf::Vector2f(140, 140));
+					rectangle.setFillColor(sf::Color::Green);
+					diamond.setPosition(sf::Vector2f(300, 100));
+					diamond.setFillColor(sf::Color::Red);
+					tails = std::vector<sf::RectangleShape>();
+					tails.insert(tails.begin(), sf::RectangleShape(rectangle.getSize()));
+					tails[0].setPosition(rectangle.getPosition().x-20,rectangle.getPosition().y);
+					tails[0].setFillColor(sf::Color(0,200,0));
+					tails.insert(tails.begin(), sf::RectangleShape(rectangle.getSize()));
+					tails[0].setPosition(rectangle.getPosition().x-40,rectangle.getPosition().y);
+					tails[0].setFillColor(sf::Color(0,200,0));
+					bombs = std::vector<sf::RectangleShape>();
+					bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+					bombs[0].setPosition(sf::Vector2f(140, 340));
+					bombs[0].setFillColor(sf::Color(55, 55, 55));
+					bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+					bombs[0].setPosition(sf::Vector2f(120, 340));
+					bombs[0].setFillColor(sf::Color(75, 75, 75));
+					bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+					bombs[0].setPosition(sf::Vector2f(140, 320));
+					bombs[0].setFillColor(sf::Color(75, 75, 75));
+					bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+					bombs[0].setPosition(sf::Vector2f(160, 340));
+					bombs[0].setFillColor(sf::Color(75, 75, 75));
+					bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+					bombs[0].setPosition(sf::Vector2f(140, 360));
+					bombs[0].setFillColor(sf::Color(75, 75, 75));
+					bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+					bombs[0].setPosition(sf::Vector2f(120, 320));
+					bombs[0].setFillColor(sf::Color(75, 75, 75));
+					bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+					bombs[0].setPosition(sf::Vector2f(120, 360));
+					bombs[0].setFillColor(sf::Color(75, 75, 75));
+					bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+					bombs[0].setPosition(sf::Vector2f(160, 320));
+					bombs[0].setFillColor(sf::Color(75, 75, 75));
+					bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+					bombs[0].setPosition(sf::Vector2f(160, 360));
+					bombs[0].setFillColor(sf::Color(75, 75, 75));
+					dir = 3;
+					gameOver = true;
+					gameSpeed = 0.151f;
+				}
+			}
+        }
+
+		if(regenerateApple){
+			regenerateApple = false;
+			gameSpeed -= 0.001f;
+			int	randx = (int)((window.getSize().x/rectangle.getSize().x) - 1);
+			randx = (int)(rand()%(randx<0?0:randx));
+			int randy = (int)((window.getSize().y/rectangle.getSize().y) - 1);
+			randy = (int)(rand()%(randy<0?0:randy));
+			diamond.setPosition(sf::Vector2f((float)randx*rectangle.getSize().x, (float)randy*rectangle.getSize().y));
+			tails.insert(tails.begin(), sf::RectangleShape(rectangle.getSize()));
+			tails[0].setPosition(rectangle.getPosition());
+			tails[0].setFillColor(sf::Color(0,200,0));
+			bombs = std::vector<sf::RectangleShape>();
+			if(rand()%3>1){
+				randx = (int)((window.getSize().x/rectangle.getSize().x) - 1);
+				randx = (int)(rand()%(randx<0?0:randx));
+				randy = (int)((window.getSize().y/rectangle.getSize().y) - 1);
+				randy = (int)(rand()%(randy<0?0:randy));
+				bombs = std::vector<sf::RectangleShape>();
+				bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+				bombs[0].setPosition(sf::Vector2f((float)randx*rectangle.getSize().x, (float)randy*rectangle.getSize().y));
+				bombs[0].setFillColor(sf::Color(55, 55, 55));
+				bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+				bombs[0].setPosition(sf::Vector2f((float)randx*rectangle.getSize().x - rectangle.getSize().x, (float)randy*rectangle.getSize().y));
+				bombs[0].setFillColor(sf::Color(75, 75, 75));
+				bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+				bombs[0].setPosition(sf::Vector2f((float)randx*rectangle.getSize().x, (float)randy*rectangle.getSize().y - rectangle.getSize().y));
+				bombs[0].setFillColor(sf::Color(75, 75, 75));
+				bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+				bombs[0].setPosition(sf::Vector2f((float)randx*rectangle.getSize().x + rectangle.getSize().x, (float)randy*rectangle.getSize().y));
+				bombs[0].setFillColor(sf::Color(75, 75, 75));
+				bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+				bombs[0].setPosition(sf::Vector2f((float)randx*rectangle.getSize().x, (float)randy*rectangle.getSize().y + rectangle.getSize().y));
+				bombs[0].setFillColor(sf::Color(75, 75, 75));
+				bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+				bombs[0].setPosition(sf::Vector2f((float)randx*rectangle.getSize().x - rectangle.getSize().x, (float)randy*rectangle.getSize().y - rectangle.getSize().y));
+				bombs[0].setFillColor(sf::Color(75, 75, 75));
+				bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+				bombs[0].setPosition(sf::Vector2f((float)randx*rectangle.getSize().x - rectangle.getSize().x, (float)randy*rectangle.getSize().y + rectangle.getSize().y));
+				bombs[0].setFillColor(sf::Color(75, 75, 75));
+				bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+				bombs[0].setPosition(sf::Vector2f((float)randx*rectangle.getSize().x + rectangle.getSize().x, (float)randy*rectangle.getSize().y - rectangle.getSize().y));
+				bombs[0].setFillColor(sf::Color(75, 75, 75));
+				bombs.insert(bombs.begin(), sf::RectangleShape(rectangle.getSize()));
+				bombs[0].setPosition(sf::Vector2f((float)randx*rectangle.getSize().x + rectangle.getSize().x, (float)randy*rectangle.getSize().y + rectangle.getSize().y));
+				bombs[0].setFillColor(sf::Color(75, 75, 75));
+				timer.restart();
+			}
+		} else {
+			if(tails.size()>1){
+				for(int i=(int)tails.size()-1; i>0; i--){
+					tails[i].setPosition(tails[i-1].getPosition());
+				}
+				tails[0].setPosition(rectangle.getPosition());
+			}
+		}
+
+		if(dir == 0){
+			rectangle.move(sf::Vector2f(0, -velocity));//up
+			if(rectangle.getPosition().y < 0)
+				rectangle.setPosition(sf::Vector2f((float)rectangle.getPosition().x, (float)window.getSize().y - rectangle.getSize().y));
+		} else if(dir == 1){
+			rectangle.move(sf::Vector2f(-velocity, 0));//left
+			if(rectangle.getPosition().x < 0)
+				rectangle.setPosition(sf::Vector2f((float)window.getSize().x - rectangle.getSize().x, (float)rectangle.getPosition().y));
+		} else if(dir == 2){
+			rectangle.move(sf::Vector2f(0, velocity));//down
+			if(rectangle.getPosition().y > window.getSize().y - rectangle.getSize().y)
+				rectangle.setPosition(sf::Vector2f((float)rectangle.getPosition().x, 0));
+		} else if(dir == 3){
+			rectangle.move(sf::Vector2f(velocity, 0));//right
+			if(rectangle.getPosition().x > window.getSize().x - rectangle.getSize().x)
+				rectangle.setPosition(sf::Vector2f(0, (float)rectangle.getPosition().y));
+		}
+
+		for(int i=0; i<tails.size(); i++){
+			if(tails[i].getPosition()==rectangle.getPosition()){
+				gameOver = true;
+			} else if(timer.getElapsedTime().asSeconds() >= 8.0 && timer.getElapsedTime().asSeconds() <= 9.0){
+				for(int j=0; j<bombs.size(); j++){
+					if(rectangle.getPosition()==bombs[j].getPosition()){
+						gameOver = true;
+					} else if(tails[i].getPosition()==bombs[j].getPosition()){
+						size_t temp = tails.size();
+						tails.resize(i);
+						if(tails.size()<=2){
+							gameOver = true;
+						}
+						tails.resize(temp);
+						bombs = std::vector<sf::RectangleShape>();
+					}			
+				}
+			}
+			if((timer.getElapsedTime().asSeconds() > 9 && !firsttime) || (timer.getElapsedTime().asSeconds() > 30.1 && firsttime)){
+				bombs = std::vector<sf::RectangleShape>();
+			}
+		}
+		
+		if(!gameOver){
+			if(rectangle.getPosition().x == diamond.getPosition().x && 
+				rectangle.getPosition().y == diamond.getPosition().y){
+				regenerateApple = true;
+			}
+
+			sf::String str ="Score: "+std::to_string((tails.size()-2)*10)+" pts";
+			sf::String bombstr = "";
+			sf::FloatRect textRect = text.getLocalBounds();
+			text.setOrigin(textRect.left + textRect.width/2.0f,
+						   textRect.top  + textRect.height/2.0f);
+			text.setPosition(sf::Vector2f(window.getSize().x/2.0f,textRect.height));
+			text.setString(str);
+			if(bombs.size()>0){
+				bombstr = std::to_string(8 - roundf((double)timer.getElapsedTime().asSeconds()*100)/100);
+				bombstr.erase(4, bombstr.getSize()-4);
+				bombtext.setPosition(bombs[0].getPosition().x-bombs[0].getSize().x, bombs[0].getPosition().y-bombs[0].getSize().y);
+			}
+			bombtext.setString(bombstr);
+
+			window.clear();
+			for(int i = 0; i<bombs.size(); i++){
+				window.draw(bombs[i]);
+			}
+			window.draw(bombtext);
+			for(int i = 0; i<tails.size(); i++){
+				window.draw(tails[i]);
+			}
+			window.draw(diamond);
+			window.draw(rectangle);
+		} else {
+			window.clear();
+			sf::String str;
+			sf::String str2;
+			sf::String str3;
+			sf::String bombstr = "";
+			if(firsttime){
+				str ="Snake Game";
+				str2 = "SpaceBar to Start";
+				str3 = "Created by DGh0st";
+				if(bombs.size()>0){
+					bombstr = std::to_string(30 - roundf(timer.getElapsedTime().asSeconds()*100)/100);
+					bombstr.erase(4, bombstr.getSize()-4);
+					bombtext.setPosition(bombs[0].getPosition().x-bombs[0].getSize().x, bombs[0].getPosition().y-bombs[0].getSize().y);
+				}
+				bombtext.setString(bombstr);
+				for(int i = 0; i<tails.size(); i++){
+					window.draw(tails[i]);
+				}
+				for(int i = 0; i<bombs.size(); i++){
+					window.draw(bombs[i]);
+				}
+				window.draw(bombtext);
+				window.draw(diamond);
+				window.draw(rectangle);
+			} else {
+				str ="Gameover! You Scored "+std::to_string((tails.size()-2)*10)+" Pts";
+				str2 = "SpaceBar to Restart";
+				str3 = "Esc to Main Screen";
+			}
+			text.setString(str);
+			undertext.setString(str2);
+			underundertext.setString(str3);
+			sf::FloatRect textRect = text.getLocalBounds();
+			text.setOrigin(textRect.left + textRect.width/2.0f,
+						   textRect.top  + textRect.height/2.0f);
+			sf::FloatRect undertextRect = undertext.getLocalBounds();
+			undertext.setOrigin(undertextRect.left + undertextRect.width/2.0f,
+								undertextRect.top  + undertextRect.height/2.0f);					
+			sf::FloatRect underundertextRect = underundertext.getLocalBounds();
+			underundertext.setOrigin(underundertextRect.left + underundertextRect.width/2.0f,
+								underundertextRect.top  + underundertextRect.height/2.0f);
+			text.setPosition(sf::Vector2f(window.getSize().x/2.0f,window.getSize().y/2.0f - 2*undertextRect.height));
+			undertext.setPosition(sf::Vector2f(window.getSize().x/2.0f, window.getSize().y/2.0f));
+			underundertext.setPosition(sf::Vector2f(window.getSize().x/2.0f, window.getSize().y/2.0f + undertextRect.top + undertextRect.height));
+			window.draw(undertext);
+			window.draw(underundertext);
+		}
+		window.draw(text);
+		window.display();
+		wait(gameSpeed);
+    }
+
+    return 0;
+}
